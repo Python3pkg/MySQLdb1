@@ -177,18 +177,18 @@ class BaseCursor(object):
         """
         del self.messages[:]
         db = self._get_db()
-        if isinstance(query, unicode):
+        if isinstance(query, str):
             query = query.encode(db.unicode_literal.charset)
         if args is not None:
             if isinstance(args, dict):
                 query = query % dict((key, db.literal(item))
-                                     for key, item in args.iteritems())
+                                     for key, item in args.items())
             else:
                 query = query % tuple([db.literal(item) for item in args])
         try:
             r = None
             r = self._query(query)
-        except TypeError, m:
+        except TypeError as m:
             if m.args[0] in ("not enough arguments for format string",
                              "not all arguments converted"):
                 self.messages.append((ProgrammingError, m.args[0]))
@@ -228,7 +228,7 @@ class BaseCursor(object):
         del self.messages[:]
         db = self._get_db()
         if not args: return
-        if isinstance(query, unicode):
+        if isinstance(query, str):
             query = query.encode(db.unicode_literal.charset)
         m = insert_values.search(query)
         if not m:
@@ -244,10 +244,10 @@ class BaseCursor(object):
             for a in args:
                 if isinstance(a, dict):
                     q.append(qv % dict((key, db.literal(item))
-                                       for key, item in a.iteritems()))
+                                       for key, item in a.items()))
                 else:
                     q.append(qv % tuple([db.literal(item) for item in a]))
-        except TypeError, msg:
+        except TypeError as msg:
             if msg.args[0] in ("not enough arguments for format string",
                                "not all arguments converted"):
                 self.errorhandler(self, ProgrammingError, msg.args[0])
@@ -297,7 +297,7 @@ class BaseCursor(object):
         for index, arg in enumerate(args):
             q = "SET @_%s_%d=%s" % (procname, index,
                                          db.literal(arg))
-            if isinstance(q, unicode):
+            if isinstance(q, str):
                 q = q.encode(db.unicode_literal.charset)
             self._query(q)
             self.nextset()
@@ -455,7 +455,7 @@ class CursorUseResultMixIn(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         row = self.fetchone()
         if row is None:
             raise StopIteration
